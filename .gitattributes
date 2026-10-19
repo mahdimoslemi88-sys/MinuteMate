@@ -1,0 +1,85 @@
+# Normalize all text files to LF in the repository and in the working tree.
+* text=auto eol=lf
+
+# Explicit text types (defensive, keeps intent readable)
+*.py     text diff=python
+*.pyi    text diff=python
+*.cs     text diff=csharp
+*.csproj text
+*.sln    text
+*.props  text
+*.xaml   text
+*.xml    text
+*.json   text
+*.jsonc  text
+*.toml   text
+*.cfg    text
+*.ini    text
+*.yml    text
+*.yaml   text
+*.md     text diff=markdown
+*.txt    text
+*.js     text
+*.mjs    text
+*.cjs    text
+*.ps1    text
+*.psm1   text
+*.sh     text eol=lf
+*.cmd    text eol=crlf
+*.bat    text eol=crlf
+.gitignore   text
+.gitattributes text
+.editorconfig text
+
+# Binary assets (never normalize or diff)
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.bmp   binary
+*.svg   text
+*.pdf   binary
+*.zip   binary
+*.tar   binary
+*.gz    binary
+*.7z    binary
+*.rar   binary
+*.xlsx  binary
+*.docx  binary
+*.pptx  binary
+
+# Audio / video (never committed, but keep the rule for safety)
+*.wav  binary
+*.mp3  binary
+*.m4a  binary
+*.flac binary
+*.ogg  binary
+*.aac  binary
+*.mp4  binary
+*.mkv  binary
+*.webm binary
+
+# Models and native artifacts
+*.onnx  binary
+*.bin   binary
+*.pt    binary
+*.pth   binary
+*.safetensors binary
+*.dll   binary
+*.exe   binary
+*.pdb   binary
+*.so    binary
+*.dylib binary
+
+# Fonts
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+
+# Generated / vendored areas are not counted as project language
+data/**          linguist-vendored
+docs/assets/**   linguist-documentation
+scripts/**       linguist-language=Python
