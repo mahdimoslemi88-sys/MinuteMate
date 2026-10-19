@@ -20,7 +20,7 @@
 | تولید صورت‌جلسه با LLM | ⏳ نقشه‌راه M3 | مهارت‌های `.agents/skills/` آماده‌اند |
 | بسته‌بندی و نصب‌کننده | ⏳ نقشه‌راه M5 | — |
 
-نقشه‌راه کامل: [`ROADMAP.md`](./ROADMAP.md) · مستندات: [`docs/`](./docs/README.md)
+نقشه‌راه کامل و راهنمای انتقال کار: [`ROADMAP.md`](./ROADMAP.md) · گزارش مستقل برای مشورت: [`docs/REVIEW-ROADMAP.md`](./docs/REVIEW-ROADMAP.md) · مستندات: [`docs/`](./docs/README.md)
 
 ---
 
@@ -223,6 +223,8 @@ dotnet test desktop\MinuteMate.Desktop.sln               # تست‌های قر�
 1. هر تغییر رفتاری موتور ⇐ تست واحد یا پوشش در `scripts/smoke_job.py`.
 2. تغییر `events.py`/`config.py` ⇐ هم‌زمان به‌روزرسانی `desktop/src/MinuteMate.Core/Contracts/`.
 3. فایل‌های حجیم (`models/`, `data/`) هرگز کامیت نشوند.
+4. همهٔ فایل‌های متنی با `.gitattributes` به LF نرمال می‌شوند؛ ویرایشگر را روی LF بگذار تا diff تمیز بماند.
+5. تغییر رفتار ⇐ به‌روزرسانی سند مربوطه در `docs/` و در صورت نیاز `ROADMAP.md`.
 
 ---
 
