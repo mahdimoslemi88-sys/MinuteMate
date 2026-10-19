@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minutemate-engine"
+version = "0.1.0"
+description = "Persian speech recognition, speaker diarization and meeting minutes engine"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "faster-whisper>=1.2.1",
+  "ctranslate2>=4.5.0",
+  "sherpa-onnx>=1.13.8",
+  "onnxruntime>=1.20.0",
+  "numpy>=1.26.0",
+  "scipy>=1.14.0",
+]
+
+[project.optional-dependencies]
+gpu = [
+  "nvidia-cublas-cu12>=12.4.0; platform_system == 'Windows'",
+  "nvidia-cuda-nvrtc-cu12>=12.4.0; platform_system == 'Windows'",
+]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+minutemate = "minutemate.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["minutemate*"]
+
+[tool.setuptools.package-data]
+minutemate = ["resources/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

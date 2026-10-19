@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Desktop (.NET)
+bin/
+obj/
+.vs/
+publish/
+*.user
+*.suo
+
+# Models (shared via junction / env var; never commit)
+models/
+
+# Jobs and outputs
+output/
+jobs/
+scratch/
+*.log
+*.tmp
+
+# Data (structure tracked, content stays local)
+data/index.json
+data/tmp/
+data/sessions/*
+data/benchmarks/*
+data/exports/*
+!data/sessions/.gitkeep
+!data/benchmarks/.gitkeep
+!data/exports/.gitkeep
+
+# Media
+*.wav
+*.mp3
+*.m4a
+*.ogg
+*.flac
+*.aac
+*.aup4
+
+# IDEs & OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Legacy git backup (moved from ../meeting-text on 1405-07-27)
+.git-legacy-meeting-text/

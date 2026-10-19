@@ -1,0 +1,288 @@
+﻿<Window x:Class="MinuteMate.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="MinuteMate"
+        Width="1220"
+        Height="800"
+        MinWidth="1000"
+        MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        FlowDirection="RightToLeft"
+        FontFamily="{DynamicResource AppFontFamily}"
+        Background="{DynamicResource AppBackgroundBrush}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="264" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0"
+                Background="{DynamicResource SidebarBackgroundBrush}"
+                Padding="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" Margin="6,10,6,30">
+                    <Border Width="44"
+                            Height="44"
+                            CornerRadius="13"
+                            Background="{DynamicResource AccentBrush}">
+                        <TextBlock Text="M"
+                                   Foreground="White"
+                                   FontSize="21"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="MinuteMate"
+                                   Foreground="White"
+                                   FontSize="17"
+                                   FontWeight="Bold" />
+                        <TextBlock Text="هوش جلسات"
+                                   Foreground="{DynamicResource SidebarMutedBrush}"
+                                   FontSize="12"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1">
+                    <Button Content="داشبورد"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Background="{DynamicResource SidebarCardBrush}"
+                            Foreground="White"
+                            FontWeight="SemiBold" />
+                    <Button Content="جلسه جدید"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Margin="0,4,0,0" />
+                    <Button Content="پروژه‌ها"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Margin="0,4,0,0" />
+                    <Button Content="تنظیمات"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Margin="0,4,0,0" />
+
+                    <TextBlock Text="فضای کاری"
+                               Foreground="{DynamicResource SidebarMutedBrush}"
+                               FontSize="11"
+                               Margin="14,28,14,8" />
+                    <Button Content="پوشه داده‌ها"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Command="{Binding OpenDataFolderCommand}" />
+                </StackPanel>
+
+                <Border Grid.Row="2"
+                        Background="{DynamicResource SidebarCardBrush}"
+                        CornerRadius="14"
+                        Padding="16">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="9"
+                                     Height="9"
+                                     Margin="0,0,8,0"
+                                     VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{DynamicResource WarningBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEngineReady}" Value="True">
+                                                <Setter Property="Fill" Value="{DynamicResource SuccessBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Text="{Binding EngineStatusTitle}"
+                                       Foreground="{DynamicResource SidebarTextBrush}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding EngineStatusDetail}"
+                                   Foreground="{DynamicResource SidebarMutedBrush}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Margin="0,7,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="32,26,32,26">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,22">
+                <StackPanel HorizontalAlignment="Right">
+                    <TextBlock Text="داشبورد"
+                               FontSize="27"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="جلسات خود را مدیریت کنید و در چند دقیقه به متن و صورت‌جلسه برسید."
+                               Style="{StaticResource MutedTextStyle}"
+                               Margin="0,6,0,0" />
+                </StackPanel>
+                <Button Content="جلسه جدید"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource PrimaryButtonStyle}" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+
+                    <Border Style="{StaticResource CardBorderStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="380" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0"
+                                        Margin="12,0"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="جلسه‌ات را به صورت‌جلسه تبدیل کن"
+                                           FontSize="23"
+                                           FontWeight="Bold"
+                                           TextAlignment="Right"
+                                           Foreground="{DynamicResource PrimaryTextBrush}" />
+                                <TextBlock Text="فایل صوتی یا ویدیویی جلسه را وارد کنید؛ رونویسی فارسی، تفکیک گویندگان و تولید صورت‌جلسه را خودکار انجام می‌دهیم."
+                                           Style="{StaticResource MutedTextStyle}"
+                                           TextAlignment="Right"
+                                           LineHeight="23"
+                                           MaxWidth="560"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,12,0,0" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
+                                    <Button Content="انتخاب فایل"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Command="{Binding PickAudioCommand}" />
+                                    <Button Content="تنظیمات پیشرفته"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Margin="10,0,0,0" />
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding SelectedAudioName}"
+                                           ToolTip="{Binding SelectedAudioPath}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="0,14,0,0" />
+                            </StackPanel>
+
+                            <Grid Grid.Column="1" Margin="12,0" Height="200">
+                                <Rectangle RadiusX="14"
+                                           RadiusY="14"
+                                           Fill="{DynamicResource FieldBackgroundBrush}"
+                                           Stroke="{DynamicResource AccentBrush}"
+                                           StrokeThickness="1.5"
+                                           StrokeDashArray="4 3" />
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="＋"
+                                               FontSize="32"
+                                               Foreground="{DynamicResource AccentBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="فایل جلسه را اینجا رها کنید"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,8,0,0" />
+                                    <TextBlock Text="MP3 · WAV · M4A · MP4"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+                                Style="{StaticResource CardBorderStyle}"
+                                Margin="0,0,8,0"
+                                Padding="22">
+                            <StackPanel>
+                                <TextBlock Text="۰" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="پروژه فعال" Style="{StaticResource MetricLabelStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1"
+                                Style="{StaticResource CardBorderStyle}"
+                                Margin="8,0,8,0"
+                                Padding="22">
+                            <StackPanel>
+                                <TextBlock Text="۰:۰۰" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="زمان پردازش‌شده" Style="{StaticResource MetricLabelStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2"
+                                Style="{StaticResource CardBorderStyle}"
+                                Margin="8,0,0,0"
+                                Padding="22">
+                            <StackPanel>
+                                <TextBlock Text="—" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="آخرین پردازش" Style="{StaticResource MetricLabelStyle}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="جلسات اخیر"
+                                           Style="{StaticResource SectionTitleStyle}"
+                                           HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid Height="170" Margin="0,18,0,0">
+                                <Rectangle RadiusX="14"
+                                           RadiusY="14"
+                                           Fill="{DynamicResource FieldBackgroundBrush}"
+                                           Stroke="{DynamicResource CardBorderBrush}"
+                                           StrokeThickness="1"
+                                           StrokeDashArray="4 3" />
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="هنوز جلسه‌ای ثبت نشده است"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="با انتخاب یک فایل صوتی یا تصویری اولین جلسه را شروع کنید."
+                                               Style="{StaticResource MutedTextStyle}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,7,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>

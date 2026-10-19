@@ -1,0 +1,8 @@
+faster-whisper>=1.2.1
+ctranslate2>=4.5.0
+sherpa-onnx>=1.13.8
+onnxruntime>=1.20.0
+numpy>=1.26.0
+scipy>=1.14.0
+nvidia-cublas-cu12>=12.4.0; platform_system == "Windows"
+nvidia-cuda-nvrtc-cu12>=12.4.0; platform_system == "Windows"

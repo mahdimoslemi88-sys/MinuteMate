@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "skills": {
+    "paths": [".agents/skills"]
+  },
+  "permission": {
+    "external_directory": {
+      "~/Desktop/projects/meeting-text/**": "allow"
+    },
+    "edit": {
+      "*": "allow",
+      "../meeting-text/**": "deny",
+      "~/Desktop/projects/meeting-text/**": "deny"
+    }
+  }
+}

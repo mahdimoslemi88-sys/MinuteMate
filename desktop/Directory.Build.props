@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <Company>MinuteMate</Company>
+    <Product>MinuteMate Desktop</Product>
+    <Authors>MinuteMate</Authors>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+</Project>
