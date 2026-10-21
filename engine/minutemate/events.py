@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
 from dataclasses import dataclass
 from typing import IO, Protocol
 
@@ -18,6 +19,7 @@ class EventType:
 
 
 class Stage:
+    MODELS = "models"
     PREPROCESS = "preprocess"
     DIARIZATION = "diarization"
     TRANSCRIPTION = "transcription"
@@ -73,15 +75,19 @@ class EventSink(Protocol):
 class JsonEventSink:
     def __init__(self, stream: IO[str] | None = None) -> None:
         self._stream = stream or sys.stdout
+        self._lock = threading.Lock()
 
     def emit(self, event: EngineEvent) -> None:
-        self._stream.write(json.dumps(event.to_payload(), ensure_ascii=False) + "\n")
-        self._stream.flush()
+        line = json.dumps(event.to_payload(), ensure_ascii=False) + "\n"
+        with self._lock:
+            self._stream.write(line)
+            self._stream.flush()
 
 
 class TextEventSink:
     def __init__(self, stream: IO[str] | None = None) -> None:
         self._stream = stream or sys.stderr
+        self._lock = threading.Lock()
 
     def emit(self, event: EngineEvent) -> None:
         if event.type == EventType.STAGE:
@@ -97,8 +103,9 @@ class TextEventSink:
             line = f"[started] {event.message or ''}".rstrip()
         else:
             line = f"[{event.level or 'info'}] {event.message or ''}".rstrip()
-        self._stream.write(line + "\n")
-        self._stream.flush()
+        with self._lock:
+            self._stream.write(line + "\n")
+            self._stream.flush()
 
 
 class NullEventSink:

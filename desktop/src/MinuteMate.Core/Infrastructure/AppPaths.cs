@@ -22,6 +22,34 @@ public static class AppPaths
 
     public static string Models => Path.Combine(Root, "models");
 
+    public static string ResolveModelsDirectory(string? configured)
+    {
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            return configured;
+        }
+
+        var fromEnvironment = Environment.GetEnvironmentVariable("MINUTEMATE_MODELS_DIR");
+        if (!string.IsNullOrWhiteSpace(fromEnvironment))
+        {
+            return fromEnvironment;
+        }
+
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, "models");
+            if (Directory.Exists(Path.Combine(candidate, "whisper")))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        return Models;
+    }
+
     public static string Projects => Path.Combine(Root, "projects");
 
     public static string Logs => Path.Combine(Root, "logs");

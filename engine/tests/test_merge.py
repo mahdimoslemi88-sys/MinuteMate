@@ -45,6 +45,35 @@ def test_merge_assigns_speakers_by_overlap(tmp_path):
     assert result["utterances"][0]["text"] == "سلام"
 
 
+def test_merge_flags_overlapping_speech(tmp_path):
+    segments = {
+        "audio": "audio.wav",
+        "segments": [
+            {"id": 0, "start": 1.1, "end": 1.9, "text": "همزمان", "words": [
+                {"start": 1.1, "end": 1.9, "word": "همزمان", "probability": 0.9},
+            ]},
+        ],
+    }
+    speakers = {
+        "audio": "audio.wav",
+        "turns": [
+            {"start": 0.0, "end": 2.0, "speaker": 0},
+            {"start": 1.0, "end": 3.0, "speaker": 1},
+        ],
+    }
+    segments_path = tmp_path / "segments.json"
+    speakers_path = tmp_path / "speakers.json"
+    segments_path.write_text(json.dumps(segments, ensure_ascii=False), encoding="utf-8")
+    speakers_path.write_text(json.dumps(speakers, ensure_ascii=False), encoding="utf-8")
+
+    result = merge_transcription_and_diarization(
+        segments_path, speakers_path, tmp_path, "session", _context(tmp_path)
+    )
+
+    assert result["overlapCount"] == 1
+    assert result["utterances"][0]["overlap"] is True
+
+
 def test_merge_without_turns_keeps_text(tmp_path):
     segments = {
         "audio": "audio.wav",

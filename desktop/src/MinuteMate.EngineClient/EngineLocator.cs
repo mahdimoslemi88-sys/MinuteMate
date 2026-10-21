@@ -25,14 +25,16 @@ public sealed class EngineLocator : IEngineLocator
 
         foreach (var name in ExecutableNames)
         {
-            var candidate = Path.Combine(AppContext.BaseDirectory, "engine", name);
-            if (File.Exists(candidate))
+            foreach (var candidate in SidecarCandidates(name))
             {
-                return new EngineLaunchSpec(
-                    candidate,
-                    ["run", "--job", "-"],
-                    Path.GetDirectoryName(candidate)!,
-                    "engine");
+                if (File.Exists(candidate))
+                {
+                    return new EngineLaunchSpec(
+                        candidate,
+                        ["run", "--job", "-"],
+                        Path.GetDirectoryName(candidate)!,
+                        "engine");
+                }
             }
         }
 
@@ -54,6 +56,21 @@ public sealed class EngineLocator : IEngineLocator
             ["-m", module, "run", "--job", "-"],
             ResolveWorkingDirectory(options, python),
             "python");
+    }
+
+    private static IEnumerable<string> SidecarCandidates(string name)
+    {
+        yield return Path.Combine(AppContext.BaseDirectory, "engine", name);
+
+        foreach (var start in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() })
+        {
+            var current = new DirectoryInfo(start);
+            while (current is not null)
+            {
+                yield return Path.Combine(current.FullName, "engine", "dist", "minutemate-engine", name);
+                current = current.Parent;
+            }
+        }
     }
 
     private static string? NormalizePath(string? path)

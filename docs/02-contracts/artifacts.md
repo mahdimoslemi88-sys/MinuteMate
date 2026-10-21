@@ -16,12 +16,13 @@
 | `<stem>.srt` | `transcription` | ✅ | زیرنویس SRT |
 | `<stem>.speakers.json` | `diarization` | ✅ | نوبت‌های گفتار و شناسهٔ گوینده |
 | `<stem>.speakers.txt` | `diarization` | ✅ | نمای انسانی نوبت‌ها |
-| `<stem>_transcript.json` | `merge` | ✅ | utterance‌ها با گوینده، زمان و متن |
+| `<stem>_transcript.json` | `merge` | ✅ | utterance‌ها با گوینده، زمان و متن + `overlap`/`overlapCount` (M6.6) |
 | `01_raw_transcript.txt` | `export` | ✅ | رونویسی خام با تایم‌استمپ |
 | `02_diarized_cleaned_transcript.txt` | `export` | ✅ | متن پالایش‌شدهٔ گوینده‌محور (متن ساده) |
 | `02_diarized_cleaned_transcript.md` | `export` | ✅ | همان با ساختار Markdown (ورودی مهارت صورت‌جلسه) |
-| `03_official_meeting_minutes.md` | `minutes` | ⏳ M3 | صورت‌جلسهٔ رسمی (مهارت `persian-meeting-minutes`) |
-| `04_action_items.md` | `minutes` | ⏳ M3 | کارت‌های اکشن‌آیتم + RACI (مهارت `meeting-action-tracker`) |
+| `03_official_meeting_minutes.md` | `minutes` | ✅ M3a | صورت‌جلسهٔ رسمی (قرارداد: `minutes.md`) |
+| `04_action_items.md` | `minutes` | ✅ M3a | کارت‌های اکشن‌آیتم + RACI |
+| `<stem>.minutes.json` | `minutes` | ✅ M3a | منبع ساختاریافتهٔ صورت‌جلسه (شناسهٔ گوینده/شاهد/نیاز به بازبینی) |
 | `session.json` | لایهٔ داده | ⏳ M2 | manifest جلسه |
 
 ## ۲. نمونهٔ ساختار `segments.json`
@@ -62,12 +63,20 @@
 ```json
 {
   "audio": "session_16k_mono.wav",
+  "overlapCount": 1,
   "utterances": [
     {
       "speaker": 0,
       "start": 0.9,
       "end": 3.44,
       "text": "سلام، جلسه را شروع می‌کنیم"
+    },
+    {
+      "speaker": 1,
+      "start": 12.2,
+      "end": 14.0,
+      "text": "بله، موافقم",
+      "overlap": true
     }
   ]
 }

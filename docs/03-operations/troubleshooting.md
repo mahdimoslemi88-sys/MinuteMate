@@ -20,8 +20,15 @@
 | کرش/Crash در بارگذاری مدل | RAM/VRAM ناکافی | `--compute-type int8`، بستن برنامه‌های سنگین، جلسه را تکه‌تکه کن |
 | در ترمینال متن «?» نمایش می‌یابد | کدگذاری کنسول | `chcp 65001`؛ (داخل موتور UTF-8 تضمین شده است) |
 | خروجی‌ها بازنویسی می‌شوند | `stem` ثابت | `--stem "<تاریخ>-<نام>"` یا ساختار جلسهٔ M2 |
+| `error: llm_auth_missing` | متغیر کلید LLM تنظیم نشده/رد شد | `$env:MINUTEMATE_LLM_API_KEY="…"` (یا نام `minutes.apiKeyEnv`) |
+| `error: llm_unavailable`/`llm_timeout` | شبکه/سرویس LLM یا مهلت کم | `baseUrl` را بررسی کن؛ `minutes.timeoutSeconds` را بالا ببر |
+| `error: llm_bad_response` | مدل JSON معتبر نداد | مدل قوی‌تر یا `provider=ollama` با مدل بزرگ‌تر؛ retry خودکار یک‌بار انجام می‌شود |
+| `error: minutes_parse_error` | رونویسی خالی/ناقص است | خروجی‌های `01_`/`02_` و `_transcript.json` را بررسی کن |
+| صورت‌جلسه تولید نشد اما اجرا سبز بود | `minutes.enabled=false` یا `provider=none` | مرحله را در job فعال کن؛ رویداد `stage(minutes)` با پیام «غیرفعال» رد می‌شود |
 | `dotnet build` قفل فایل | اجرای هم‌زمان اپ | اپ را ببند یا `dotnet build-server shutdown` |
+| `error: cuda_unavailable` | GPU/CUDA ناقص است | موتور یک بار خودکار روی CPU/int8 تلاش می‌کند (لاگ `warning`)؛ اگر باز هم خطا داد DLLهای CUDA را نصب یا `--device cpu` بده |
 | اپ: «موتور آماده نیست» | پایتون/موتور پیدا نشد | `Engine.PythonPath` یا `Engine.ExecutablePath` را در `appsettings.json` ست کن |
+| اپ: هشدار «نسخهٔ موتور … هم‌خوان نیست» | نسخهٔ major/minor موتور و دسکتاپ یکی نیست | `python -m minutemate --version` و `<Version>` در `desktop/Directory.Build.props` را یکی کن؛ قرارداد job ممکن است تغییر کرده باشد |
 
 ## ۲. تشخیص گام‌به‌گام
 

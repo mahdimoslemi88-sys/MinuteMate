@@ -21,7 +21,7 @@
 | کلید | نوع | توضیح |
 | :--- | :--- | :--- |
 | `type` | string | `started` \| `stage` \| `log` \| `artifact` \| `error` \| `done` |
-| `stage` | string? | `preprocess` \| `diarization` \| `transcription` \| `merge` \| `export` \| `minutes` |
+| `stage` | string? | `models` \| `preprocess` \| `diarization` \| `transcription` \| `merge` \| `export` \| `minutes` |
 | `status` | string? | `pending` \| `running` \| `done` \| `failed` |
 | `progress` | number? | ۰ تا ۱ برای مرحلهٔ جاری |
 | `etaSeconds` | number? | تخمین زمان باقی‌ماندهٔ مرحله |
@@ -37,6 +37,7 @@
 
 ```
 started
+  stage(models, running, 0) … stage(models, done, 1)   # فقط اگر مدل ناقص و autoDownloadModels=true
   stage(preprocess, running, 0) … stage(preprocess, done, 1)
   stage(diarization, running, 0) … stage(…, done, 1)
   stage(transcription, running, 0) … stage(…, done, 1)
@@ -87,8 +88,13 @@ done
 | `ffmpeg_missing` | FFmpeg پیدا نشد | نصب یا `--ffmpeg <path>` |
 | `cuda_unavailable` | CUDA نبود | `--device cpu` یا نصب CUDA 12 |
 | `cancelled` | لغو توسط کاربر | — |
-| `stage_error` | خطای مرحلهٔ داخلی | `--log-level DEBUG` و پیام `hint` |
-| `internal_error` | خطای پیش‌بینی‌نشده | traceback در stderr |
+| `stage_failed` | خطای مرحلهٔ داخلی | `--log-level DEBUG` و پیام `hint` |
+| `llm_auth_missing` | کلید LLM تنظیم نشده/رد شد | مقدار `apiKeyEnv` را تنظیم کن |
+| `llm_unavailable` | سرویس LLM در دسترس نیست | `baseUrl`/شبکه را بررسی کن |
+| `llm_timeout` | مهلت فراخوانی LLM | `timeoutSeconds` را افزایش بده |
+| `llm_bad_response` | پاسخ نامعتبر LLM | مدل/پرامپت را بررسی کن |
+| `minutes_parse_error` | دادهٔ رونویسی برای صورت‌جلسه ناقص | خروجی‌های ۰۱/۰۲ را بررسی کن |
+| `engine_error` | خطای پیش‌بینی‌نشده | traceback در stderr |
 
 ## ۷. نسخه‌گذاری قرارداد
 

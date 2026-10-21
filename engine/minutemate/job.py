@@ -20,8 +20,10 @@ class JobContext:
         self.logger = get_logger("minutemate.job")
         self._cancel = threading.Event()
         self._started = time.time()
-        self._last_progress_at = 0.0
-        self._last_progress_value = -1.0
+        self._progress_state: dict[str, tuple[float, float]] = {}
+        self._event_lock = threading.Lock()
+        self._stage_started_at: dict[str, float] = {}
+        self.stage_seconds: dict[str, float] = {}
 
     @property
     def cancelled(self) -> bool:
@@ -38,7 +40,8 @@ class JobContext:
         return time.time() - self._started
 
     def emit(self, event: EngineEvent) -> None:
-        self.sink.emit(event)
+        with self._event_lock:
+            self.sink.emit(event)
 
     def log(self, message: str, level: str = "info") -> None:
         self.logger.log(getattr(logging, level.upper(), logging.INFO), message)
@@ -49,6 +52,7 @@ class JobContext:
 
     def stage_start(self, stage: str, message: str | None = None) -> None:
         self.logger.info("stage %s started", stage)
+        self._stage_started_at[stage] = time.time()
         self.emit(EngineEvent(type=EventType.STAGE, stage=stage, status=Status.RUNNING, progress=0.0, message=message))
 
     def stage_progress(
@@ -61,10 +65,10 @@ class JobContext:
     ) -> None:
         fraction = max(0.0, min(1.0, fraction))
         now = time.time()
-        if not force and fraction - self._last_progress_value < 0.005 and now - self._last_progress_at < 0.5:
+        last_at, last_value = self._progress_state.get(stage, (0.0, -1.0))
+        if not force and fraction - last_value < 0.005 and now - last_at < 0.5:
             return
-        self._last_progress_at = now
-        self._last_progress_value = fraction
+        self._progress_state[stage] = (now, fraction)
         self.emit(
             EngineEvent(
                 type=EventType.STAGE,
@@ -78,6 +82,9 @@ class JobContext:
 
     def stage_done(self, stage: str, message: str | None = None) -> None:
         self.logger.info("stage %s done", stage)
+        started = self._stage_started_at.pop(stage, None)
+        if started is not None:
+            self.stage_seconds[stage] = round(time.time() - started, 3)
         self.emit(
             EngineEvent(
                 type=EventType.STAGE,

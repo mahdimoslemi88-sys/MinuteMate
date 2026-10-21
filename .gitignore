@@ -7,6 +7,7 @@ venv/
 *.egg-info/
 dist/
 build/
+.env
 
 # Desktop (.NET)
 bin/
@@ -21,6 +22,7 @@ models/
 
 # Jobs and outputs
 output/
+output_*/
 jobs/
 scratch/
 *.log
@@ -32,8 +34,15 @@ data/tmp/
 data/sessions/*
 data/benchmarks/*
 data/exports/*
+data/metrics/*
 !data/sessions/.gitkeep
 !data/benchmarks/.gitkeep
+!data/benchmarks/registry.json
+!data/benchmarks/README.md
+!data/benchmarks/truth/
+!data/benchmarks/truth/**
+!data/benchmarks/reports/
+!data/benchmarks/reports/**
 !data/exports/.gitkeep
 
 # Media

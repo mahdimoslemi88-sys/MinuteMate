@@ -92,7 +92,7 @@ def preprocess(
     target.parent.mkdir(parents=True, exist_ok=True)
 
     info = probe(source, ffmpeg_bin)
-    audio_filter = f"highpass=f=60,lowpass=f=7800,loudnorm=I={target_lufs}:TP=-1.5:LRA=11"
+    audio_filter = "highpass=f=60"
 
     command = [
         binary,

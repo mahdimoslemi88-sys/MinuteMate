@@ -71,6 +71,7 @@
                             Margin="0,4,0,0" />
                     <Button Content="تنظیمات"
                             Style="{StaticResource SidebarButtonStyle}"
+                            Command="{Binding OpenSettingsCommand}"
                             Margin="0,4,0,0" />
 
                     <TextBlock Text="فضای کاری"
@@ -80,6 +81,10 @@
                     <Button Content="پوشه داده‌ها"
                             Style="{StaticResource SidebarButtonStyle}"
                             Command="{Binding OpenDataFolderCommand}" />
+                    <Button Content="پوشه جلسه‌ها"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Command="{Binding OpenSessionsFolderCommand}"
+                            Margin="0,2,0,0" />
                 </StackPanel>
 
                 <Border Grid.Row="2"
@@ -113,6 +118,29 @@
                                    FontSize="11"
                                    TextWrapping="Wrap"
                                    Margin="0,7,0,0" />
+                        <Button Content="بررسی آمادگی"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding CheckPreflightCommand}"
+                                Margin="0,10,0,0"
+                                Padding="10,6"
+                                FontSize="12"
+                                HorizontalAlignment="Right" />
+                        <TextBlock Text="{Binding PreflightText}"
+                                   Foreground="{DynamicResource SidebarMutedBrush}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Margin="0,8,0,0" />
+                        <TextBlock Text="{Binding PreflightDetail}"
+                                   Foreground="{DynamicResource SidebarMutedBrush}"
+                                   FontSize="10"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,0,0" />
+                        <TextBlock Text="{Binding VersionWarning}"
+                                   Foreground="{DynamicResource WarningBrush}"
+                                   FontSize="10"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,0"
+                                   Visibility="{Binding VersionWarning, Converter={StaticResource StringToVisibility}}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -172,8 +200,13 @@
                                     <Button Content="انتخاب فایل"
                                             Style="{StaticResource PrimaryButtonStyle}"
                                             Command="{Binding PickAudioCommand}" />
-                                    <Button Content="تنظیمات پیشرفته"
+                                    <Button Content="شروع پردازش"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Command="{Binding StartJobCommand}"
+                                            Margin="10,0,0,0" />
+                                    <Button Content="لغو"
                                             Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding CancelJobCommand}"
                                             Margin="10,0,0,0" />
                                 </StackPanel>
 
@@ -213,6 +246,204 @@
                         </Grid>
                     </Border>
 
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="تنظیمات اجرا"
+                                           Style="{StaticResource SectionTitleStyle}"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Text="{Binding SessionsRoot}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding SessionsRoot}" />
+                            </Grid>
+
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                    <TextBlock Text="عنوان جلسه" Style="{StaticResource InputLabelStyle}" />
+                                    <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FormTextBoxStyle}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="6,0">
+                                    <TextBlock Text="تاریخ" Style="{StaticResource InputLabelStyle}" />
+                                    <DatePicker SelectedDate="{Binding SelectedDate}"
+                                                Style="{StaticResource FormDatePickerStyle}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Margin="6,0">
+                                    <TextBlock Text="گویندگان" Style="{StaticResource InputLabelStyle}" />
+                                    <ComboBox ItemsSource="{Binding SpeakerCounts}"
+                                              SelectedItem="{Binding NumSpeakers}"
+                                              Style="{StaticResource FormComboBoxStyle}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="3" Margin="6,0">
+                                    <TextBlock Text="دستگاه" Style="{StaticResource InputLabelStyle}" />
+                                    <ComboBox ItemsSource="{Binding Devices}"
+                                              SelectedItem="{Binding SelectedDevice}"
+                                              Style="{StaticResource FormComboBoxStyle}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="4" Margin="6,0">
+                                    <TextBlock Text="مدل رونویسی" Style="{StaticResource InputLabelStyle}" />
+                                    <ComboBox ItemsSource="{Binding AsrModels}"
+                                              SelectedItem="{Binding SelectedAsrModel}"
+                                              Style="{StaticResource FormComboBoxStyle}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="5" Margin="12,0,0,0">
+                                    <TextBlock Text="نوع محاسبه" Style="{StaticResource InputLabelStyle}" />
+                                    <ComboBox ItemsSource="{Binding ComputeTypes}"
+                                              SelectedItem="{Binding SelectedComputeType}"
+                                              Style="{StaticResource FormComboBoxStyle}" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="پردازش جلسه"
+                                           Style="{StaticResource SectionTitleStyle}"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Text="{Binding StageText}"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+
+                            <ProgressBar Style="{StaticResource ProgressBarStyle}"
+                                         Value="{Binding ProgressValue}"
+                                         Maximum="100"
+                                         Margin="0,16,0,0" />
+
+                            <Grid Margin="0,10,0,0">
+                                <TextBlock Text="{Binding StatusText}"
+                                           Style="{StaticResource MutedTextStyle}"
+                                           Margin="0,0,140,0" />
+                                <TextBlock Text="{Binding EtaText}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           HorizontalAlignment="Left" />
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                <Button Content="شروع پردازش"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Command="{Binding StartJobCommand}" />
+                                <Button Content="لغو"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding CancelJobCommand}"
+                                        Margin="10,0,0,0" />
+                                <Button Content="پوشهٔ خروجی"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding OpenOutputFolderCommand}"
+                                        Margin="10,0,0,0" />
+                                <Button Content="باز کردن خروجی"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding OpenLastOutputCommand}"
+                                        Margin="10,0,0,0" />
+                                <Button Content="پوشهٔ لاگ"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding OpenLogFolderCommand}"
+                                        Margin="10,0,0,0" />
+                            </StackPanel>
+
+                            <CheckBox Content="تولید صورت‌جلسه با هوش مصنوعی"
+                                      IsChecked="{Binding EnableMinutes}"
+                                      Margin="0,16,0,0"
+                                      HorizontalAlignment="Right" />
+
+                            <TextBlock Text="متن جلسه به سرویس LLM تنظیم‌شده در appsettings.json ارسال می‌شود؛ در صورت نبود دسترسی، مرحله با خطا متوقف می‌شود."
+                                       Style="{StaticResource MutedTextStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0"
+                                       Visibility="{Binding EnableMinutes, Converter={StaticResource BoolToVisibility}}" />
+
+                            <Border Background="#FEF2F2"
+                                    BorderBrush="{DynamicResource DangerBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="14"
+                                    Margin="0,14,0,0"
+                                    Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding ErrorTitle}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource DangerBrush}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding ErrorHint}"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                               TextWrapping="Wrap"
+                                               MaxHeight="140"
+                                               Margin="0,6,0,0" />
+                                    <Button Content="باز کردن پوشهٔ لاگ"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding OpenLogFolderCommand}"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,10,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource FieldBackgroundBrush}"
+                                    BorderBrush="{DynamicResource CardBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10"
+                                    Margin="0,14,0,0">
+                                <ScrollViewer Height="150"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl ItemsSource="{Binding LogEntries}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Display}"
+                                                           FontFamily="Consolas, Courier New"
+                                                           FontSize="12"
+                                                           TextWrapping="Wrap"
+                                                           FlowDirection="LeftToRight">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Level}" Value="error">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Level}" Value="warning">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Level}" Value="debug">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource CardBorderBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
                     <Grid Margin="0,16,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -225,8 +456,8 @@
                                 Margin="0,0,8,0"
                                 Padding="22">
                             <StackPanel>
-                                <TextBlock Text="۰" Style="{StaticResource MetricValueStyle}" />
-                                <TextBlock Text="پروژه فعال" Style="{StaticResource MetricLabelStyle}" />
+                                <TextBlock Text="{Binding SessionCountText}" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="جلسه ثبت‌شده" Style="{StaticResource MetricLabelStyle}" />
                             </StackPanel>
                         </Border>
 
@@ -235,8 +466,8 @@
                                 Margin="8,0,8,0"
                                 Padding="22">
                             <StackPanel>
-                                <TextBlock Text="۰:۰۰" Style="{StaticResource MetricValueStyle}" />
-                                <TextBlock Text="زمان پردازش‌شده" Style="{StaticResource MetricLabelStyle}" />
+                                <TextBlock Text="{Binding ProcessedDurationText}" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="مدت صدای پردازش‌شده" Style="{StaticResource MetricLabelStyle}" />
                             </StackPanel>
                         </Border>
 
@@ -245,8 +476,8 @@
                                 Margin="8,0,0,0"
                                 Padding="22">
                             <StackPanel>
-                                <TextBlock Text="—" Style="{StaticResource MetricValueStyle}" />
-                                <TextBlock Text="آخرین پردازش" Style="{StaticResource MetricLabelStyle}" />
+                                <TextBlock Text="{Binding LastSessionText}" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="آخرین جلسه" Style="{StaticResource MetricLabelStyle}" />
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -257,9 +488,40 @@
                                 <TextBlock Text="جلسات اخیر"
                                            Style="{StaticResource SectionTitleStyle}"
                                            HorizontalAlignment="Right" />
+                                <Button Content="تازه‌سازی"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding RefreshSessionsListCommand}"
+                                        HorizontalAlignment="Left"
+                                        Padding="12,6"
+                                        FontSize="12" />
                             </Grid>
 
-                            <Grid Height="170" Margin="0,18,0,0">
+                            <Grid Margin="0,14,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding SessionQuery, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBoxStyle}"
+                                         ToolTip="جست‌وجو در عنوان، شناسه، تاریخ و متن رونویسی" />
+                                <TextBlock Grid.Column="1"
+                                           Text="جست‌وجو"
+                                           Style="{StaticResource MutedTextStyle}"
+                                           VerticalAlignment="Center"
+                                           Margin="10,0,0,0" />
+                            </Grid>
+
+                            <Grid Height="150" Margin="0,14,0,0">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasSessions}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
                                 <Rectangle RadiusX="14"
                                            RadiusY="14"
                                            Fill="{DynamicResource FieldBackgroundBrush}"
@@ -278,6 +540,89 @@
                                                Margin="0,7,0,0" />
                                 </StackPanel>
                             </Grid>
+
+                            <ItemsControl ItemsSource="{Binding Sessions}" Margin="0,14,0,0">
+                                <ItemsControl.Style>
+                                    <Style TargetType="ItemsControl">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasSessions}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ItemsControl.Style>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource FieldBackgroundBrush}"
+                                                BorderBrush="{DynamicResource CardBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="10"
+                                                Padding="14"
+                                                Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border Grid.Column="0"
+                                                        Background="{DynamicResource AccentSoftBrush}"
+                                                        CornerRadius="7"
+                                                        Padding="9,4"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding StatusText}"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource AccentBrush}" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}"
+                                                               FontSize="14"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource PrimaryTextBrush}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock FontSize="11"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                               Margin="0,4,0,0">
+                                                        <Run Text="{Binding DateText, Mode=OneWay}" />
+                                                        <Run Text=" · " />
+                                                        <Run Text="{Binding DurationText, Mode=OneWay}" />
+                                                        <Run Text=" · " />
+                                                        <Run Text="{Binding SpeakerText, Mode=OneWay}" />
+                                                    </TextBlock>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2"
+                                                            Orientation="Horizontal"
+                                                            VerticalAlignment="Center">
+                                                    <Button Content="نمایش"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Padding="10,6"
+                                                            FontSize="12"
+                                                            Command="{Binding DataContext.OpenSessionOutputCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}" />
+                                                    <Button Content="پوشه"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Padding="10,6"
+                                                            FontSize="12"
+                                                            Margin="6,0,0,0"
+                                                            Command="{Binding DataContext.OpenSessionFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}" />
+                                                    <Button Content="اجرای مجدد"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Padding="10,6"
+                                                            FontSize="12"
+                                                            Margin="6,0,0,0"
+                                                            Command="{Binding DataContext.RerunSessionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                            CommandParameter="{Binding}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </Border>
 

@@ -13,12 +13,13 @@
 
 | مؤلفه | وضعیت | توضیح |
 | :--- | :---: | :--- |
-| موتور پایتونی (`engine/`) | ✅ آماده | ۵ مرحلهٔ کامل، تست‌شده روی CPU (`int8`) و آمادهٔ اجرا روی CUDA (`float16`) |
+| موتور پایتونی (`engine/`) | ✅ آماده | ۶ مرحله (تا صورت‌جلسه)، تست‌شده روی CPU (`int8`) |
 | پروتکل ماشین (job JSON + NDJSON) | ✅ آماده | stdout فقط رویداد، stderr فقط لاگ |
 | مدل‌ها | ✅ آماده | از پوشهٔ `models/` (junction به مدل‌های موجود) خوانده می‌شوند |
-| دسکتاپ (`desktop/`) | 🔄 در جریان | اسکلت MVVM + EngineClient ساخته شده؛ اتصال ViewModel به اجرای واقعی در M1 |
-| تولید صورت‌جلسه با LLM | ⏳ نقشه‌راه M3 | مهارت‌های `.agents/skills/` آماده‌اند |
-| بسته‌بندی و نصب‌کننده | ⏳ نقشه‌راه M5 | — |
+| لایهٔ داده و جلسه‌ها | ✅ آماده | `raw/work/out` + `session.json` + `data list/prune/archive/adopt` |
+| دسکتاپ (`desktop/`) | ✅ MVP | اجرا/لغو/پیشرفت، تاریخچه و جست‌وجو، تنظیمات، پیش‌بررسی، باز کردن خروجی |
+| تولید صورت‌جلسه با LLM | ✅ M3a | مرحلهٔ موتور + مهارت‌های `.agents/skills/` |
+| بسته‌بندی و نصب‌کننده | ✅ آماده | `dist\MinuteMate-Setup-0.1.0.exe` (~۳۲۲ MB؛ بدون مدل/CUDA، per-user، انتخاب و دانلود مدل در صفحهٔ نصب، همراه `.env` خام) |
 
 نقشه‌راه کامل و راهنمای انتقال کار: [`ROADMAP.md`](./ROADMAP.md) · گزارش مستقل برای مشورت: [`docs/REVIEW-ROADMAP.md`](./docs/REVIEW-ROADMAP.md) · مستندات: [`docs/`](./docs/README.md)
 
@@ -26,9 +27,10 @@
 
 ## ۲. قابلیت‌ها
 
-- **پیش‌پردازش صوتی:** تبدیل به 16kHz mono + نرمال‌سازی بلندی صدا با `loudnorm`، با نمایش پیشرفت واقعی و امکان لغو.
+- **پیش‌پردازش صوتی:** تبدیل به 16kHz mono با فیلتر `highpass=f=60` (بدون تغییر بلندی)، با نمایش پیشرفت واقعی و امکان لغو.
 - **تفکیک گویندگان (Diarization):** PyAnnote segmentation 3.0 + امبدینگ WeSpeaker / 3D-Speaker روی ONNX Runtime، با تخمین خودکار تعداد گویندگان.
-- **رونویسی فارسی (ASR):** `faster-whisper-large-v3-turbo` با word-level timestamps.
+- **رونویسی فارسی (ASR):** `faster-whisper-large-v3-turbo` با word-level timestamps؛ حالت اختیاری «دقت بالا» با مدل فارسی `large-v3-persian-ct2-int8` (`--asr-model fa`).
+- **رونویسی ابری (اختیاری):** پرووایدر Groq (`--asr-provider`/`asrProvider=groq`) با چانک‌بندی ۳۰ ثانیه‌ای و چند کلید؛ مناسب صداهای کم‌باند که مدل محلی روی آن‌ها ضعیف است.
 - **ادغام هوشمند:** تخصیص گوینده به هر جمله بر اساس بیشترین هم‌پوشانی زمانی واژه‌ها.
 - **پالایش متن فارسی:** نیم‌فاصله، اصلاح واژگان تخصصی از واژه‌نامهٔ قابل‌ویرایش، حذف حشوها.
 - **خروجی‌های آمادهٔ استفاده:** رونویسی خام، رونویسی گوینده‌محور (txt/md)، زیرنویس SRT و JSON ماشین‌خوان.
@@ -66,6 +68,10 @@ python -m minutemate run ..\meeting.mp3 --out-dir output --stem session1 --num-s
 
 # اجرای روی CPU (بدون GPU)
 python -m minutemate run ..\meeting.mp3 --out-dir output --stem session1 --device cpu --compute-type int8
+
+# حالت جلسه‌محور (M2): ساخت data/sessions/<date>-<slug>/{raw,work,out} + session.json
+python -m minutemate run ..\meeting.mp3 --sessions-root ..\data\sessions --num-speakers 4
+python -m minutemate data list
 ```
 
 > اگر بسته را نصب می‌کنی: `pip install -e engine` و سپس فقط `minutemate run …` (شورتکات `run` اختیاری است).
@@ -77,7 +83,20 @@ dotnet build desktop\MinuteMate.Desktop.sln
 dotnet run --project desktop\src\MinuteMate.App\MinuteMate.App.csproj
 ```
 
-اگر موتور شناسایی نشد، در `desktop\src\MinuteMate.App\appsettings.json` مقدار `Engine.PythonPath` یا `Engine.PythonModule` (پیش‌فرض `minutemate`) را تنظیم کن.
+اگر موتور شناسایی نشد، از صفحهٔ تنظیمات (یا `desktop\src\MinuteMate.App\appsettings.json`) مقدار `Engine.PythonPath` یا `Engine.PythonModule` (پیش‌فرض `minutemate`) را تنظیم کن. تنظیمات در `%LOCALAPPDATA%\MinuteMate\settings.json` ذخیره می‌شود.
+
+اپ: فرم عنوان/ تاریخ/گویندگان/دستگاه، «بررسی آمادگی» (preflight)، دانلود خودکار مدل در اولین اجرا، کارت «جلسات اخیر» با جست‌وجو، «نمایش/پوشه/اجرای مجدد» و دکمهٔ «باز کردن خروجی».
+
+ساخت نسخهٔ توزیع:
+
+```powershell
+pwsh -NoProfile -File scripts\build_engine.ps1 -Clean   # sidecar (PyInstaller)
+pwsh -NoProfile -File scripts\build_installer.ps1 -SkipEngine  # publish + Inno → dist\MinuteMate-Setup-0.1.0.exe
+```
+
+نصاب بدون مدل ساخته می‌شود (مدل در اولین اجرا دانلود می‌شود) و فایل `.env` خام و بدون کلید کنار برنامه نصب می‌گردد؛ با به‌روزرسانی یا حذف برنامه پاک نمی‌شود. برای افزودن دستی پرووایدر، `GROQ_API_KEY=...` را در همان `.env` بگذار.
+
+جزئیات: `docs/03-operations/packaging.md` و `docs/06-product/install-guide.md`.
 
 ---
 
@@ -87,11 +106,14 @@ dotnet run --project desktop\src\MinuteMate.App\MinuteMate.App.csproj
 minutemate run [audio] [گزینه‌ها]      اجرای خط لوله
 minutemate models list|verify|download  مدیریت مدل‌ها
 minutemate preflight                    بررسی پیش‌نیازها (خروجی JSON)
+minutemate data list|index|prune|archive|adopt  مدیریت جلسه‌ها و داده (M2)
 ```
 
 | گزینه (`run`) | پیش‌فرض | توضیح |
 | :--- | :--- | :--- |
-| `--out-dir` | `output` | پوشهٔ خروجی |
+| `--out-dir` | `output` | پوشهٔ خروجی (حالت مسطح) |
+| `--session-dir` | — | پوشهٔ صریح جلسه؛ `work/` و `out/` جدا و `session.json` ساخته می‌شود |
+| `--sessions-root` | — | ریشهٔ جلسه‌ها؛ شناسهٔ `<date>-<slug>` خودکار |
 | `--stem` | `meeting` | پیشوند نام فایل‌های خروجی |
 | `--title` | `جلسه <stem>` | عنوان در سرصفحهٔ گزارش‌ها |
 | `--date` | تاریخ امروز | تاریخ گزارش (ISO) |
@@ -103,6 +125,14 @@ minutemate preflight                    بررسی پیش‌نیازها (خرو
 | `--models-dir` | — | مسیر مدل‌ها (بر `MINUTEMATE_MODELS_DIR` و `models/` اولویت دارد) |
 | `--ffmpeg` | `ffmpeg` | مسیر یا نام فایل اجرایی FFmpeg |
 | `--beam-size` | `1` | اندازهٔ beam در Whisper (سرعت ↔ دقت) |
+| `--batch-size` | `0` | batch رونویسی روی GPU؛ `0` خاموش |
+| `--chunk-seconds` | `1800` | طول چانک ASR برای جلسات طولانی؛ `0` خاموش |
+| `--chunk-overlap` | `5` | هم‌پوشانی چانک‌های ASR (ثانیه) |
+| `--parallel-stages` | `auto` | موازی‌سازی دیاریزیشن/رونویسی (`auto` = فقط CUDA) |
+| `--speaker-embedding` | `wespeaker` | مدل embedding گوینده (`wespeaker` \| `3dspeaker`) |
+| `--asr-model` | `turbo` | مدل رونویسی: `turbo` (سریع) \| `fa` (مدل فارسی، دقت بالا، فقط در همین حالت دانلود می‌شود) |
+| `--asr-provider` | `local` | `local` (faster-whisper) \| `groq` (ابری؛ نیازمند `GROQ_API_KEY`) |
+| `--groq-model` | `whisper-large-v3-turbo` | مدل Groq هنگام `--asr-provider groq` |
 | `--num-threads` | `6` | تعداد ریسه برای ONNX |
 | `--log-level` | `INFO` | `DEBUG` \| `INFO` \| `WARNING` \| `ERROR` |
 | `--job` | — | `-` = خواندن job از stdin (حالت ماشین) |
@@ -129,7 +159,14 @@ job JSON روی **stdin**، رویدادهای NDJSON روی **stdout**، لاگ
   "device": "auto",
   "computeType": "auto",
   "language": "fa",
-  "speakerMap": { "0": { "name": "مهدی", "role": "سرپرست" } }
+  "speakerMap": { "0": { "name": "مهدی", "role": "سرپرست" } },
+  "minutes": {
+    "enabled": false,
+    "provider": "none",
+    "baseUrl": "https://api.example.com/v1",
+    "model": "example-model",
+    "apiKeyEnv": "MINUTEMATE_LLM_API_KEY"
+  }
 }
 ```
 
@@ -141,6 +178,8 @@ job JSON روی **stdin**، رویدادهای NDJSON روی **stdout**، لاگ
 ```
 
 جزئیات کامل: [`docs/02-contracts/job-json.md`](./docs/02-contracts/job-json.md) و [`docs/02-contracts/ndjson-events.md`](./docs/02-contracts/ndjson-events.md).
+
+مرحلهٔ صورت‌جلسه (`minutes`) اختیاری است: با `provider=none` (یا `enabled=false`) رد می‌شود و هیچ تماس شبکه‌ای انجام نمی‌شود. کلید سرویس **هرگز** داخل job نمی‌آید؛ فقط نام متغیر محیطی در `apiKeyEnv` داده می‌شود. قرارداد کامل در [`docs/02-contracts/minutes.md`](./docs/02-contracts/minutes.md).
 
 ---
 
@@ -156,8 +195,12 @@ job JSON روی **stdin**، رویدادهای NDJSON روی **stdout**، لاگ
 | `01_raw_transcript.txt` | رونویسی خام با تایم‌استمپ |
 | `02_diarized_cleaned_transcript.txt` | متن گوینده‌محور، پالایش‌شده |
 | `02_diarized_cleaned_transcript.md` | همان متن با Markdown (ورودی مهارت صورت‌جلسه) |
-| `03_official_meeting_minutes.md` | صورت‌جلسهٔ رسمی (با مهارت `persian-meeting-minutes`) |
-| `04_action_items.md` | کارت‌های اکشن‌آیتم و RACI (با مهارت `meeting-action-tracker`) |
+| `03_official_meeting_minutes.md` | صورت‌جلسهٔ رسمی — مرحلهٔ `minutes` (یا مهارت `persian-meeting-minutes`) |
+| `04_action_items.md` | کارت‌های اکشن‌آیتم و RACI — مرحلهٔ `minutes` (یا مهارت `meeting-action-tracker`) |
+| `<stem>.minutes.json` | صورت‌جلسهٔ ساختاریافته (منبع حقیقت رندر؛ تغییر نام گوینده بدون فراخوانی دوبارهٔ LLM) |
+| `session.json` | manifest جلسه در حالت `--session-dir`/`--sessions-root` (منبع `data list`/`index`) |
+
+در حالت جلسه‌محور (M2): فایل‌های میانی (`_16k_mono.wav`, `.segments.*`, `.speakers.*`, `_transcript.json`) در `work/` و تحویل‌دادنی‌ها (`01_`…`04_`, `*.minutes.json`) در `out/` قرار می‌گیرند. جزئیات: [`docs/04-data/sessions.md`](./docs/04-data/sessions.md).
 
 ---
 
@@ -166,6 +209,7 @@ job JSON روی **stdin**، رویدادهای NDJSON روی **stdout**، لاگ
 | گروه | فایل | حجم | منبع |
 | :--- | :--- | :--- | :--- |
 | ASR | `whisper/faster-whisper-large-v3-turbo/*` | ~1.6 GB | HuggingFace (`deepdml`) |
+| ASR فارسی (اختیاری) | `whisper/faster-whisper-large-v3-persian-ct2-int8/*` | ~1.5 GB | HuggingFace (`AmirMohseni`) — فقط با `--asr-model fa` لازم است |
 | Diarization | `speaker/sherpa-onnx-pyannote-segmentation-3-0/model.onnx` | ~6 MB | GitHub releases (`k2-fsa/sherpa-onnx`) |
 | Embedding | `speaker/3dspeaker_speech_campplus_sv_en_voxceleb_16k.onnx` | ~28 MB | همان |
 | Embedding | `speaker/wespeaker_en_voxceleb_resnet34_LM.onnx` | ~25 MB | همان |
@@ -188,6 +232,7 @@ Minute-mate/
 ├── models/                 مدل‌ها (junction؛ در git نیست)
 ├── data/                   دادهٔ جلسات، بنچمارک‌ها و خروجی‌ها (رجوع به docs/04-data)
 ├── scripts/smoke_job.py    تست دود انتها-به-انتها در حالت NDJSON
+├── scripts/evaluate.py     ارزیابی WER/CER/DER/JER + RTF روی مجموعهٔ طلایی
 ├── docs/                   مستندات پروژه
 ├── .agents/skills/         مهارت‌های عامل (صورت‌جلسه، گوینده‌یاب، اکشن‌آیتم)
 ├── .opencode/plugins/      هوک‌های تضمین کیفیت
@@ -200,6 +245,7 @@ Minute-mate/
 | متغیر | مصرف | توضیح |
 | :--- | :--- | :--- |
 | `MINUTEMATE_MODELS_DIR` | موتور | مسیر مدل‌ها |
+| `GROQ_API_KEY` | موتور | کلید(های) Groq برای `asrProvider=groq`؛ چند کلید را با کاما جدا کنید (round-robin). از `.env` هم خوانده می‌شود |
 | `MINUTEMATE_DATA_DIR` | دسکتاپ | ریشهٔ دادهٔ اپ (`%LOCALAPPDATA%\MinuteMate` به‌صورت پیش‌فرض) |
 
 ---
@@ -209,8 +255,14 @@ Minute-mate/
 ```powershell
 python -m pytest -q                                     # از engine/ → تست‌های واحد
 python scripts\smoke_job.py scratch\sample30.wav         # از ریشه → اجرای واقعی NDJSON
+python scripts\evaluate.py --registry data\benchmarks\registry.json --run-all
 dotnet test desktop\MinuteMate.Desktop.sln               # تست‌های قرارداد C#
 ```
+
+> ارزیابی فعلی روی نمونهٔ `mm19-0062` با مرجع **draft** است؛ عدد WER/DER آن برای مقایسهٔ نسبی است، نه پذیرش. جزئیات: [`data/benchmarks/README.md`](./data/benchmarks/README.md).
+>
+> دروازهٔ رگرسیون: `python scripts\evaluate.py ... --baseline <report.json>` (افت بیش از ۱ واحد WER/DER ⇒ خروجی ۳).
+> CI: `.github/workflows/ci.yml` روی ویندوز — ۱۱۳ pytest + ۳۱ تست دسکتاپ + build بدون warning.
 
 پروژه با هوک‌های `.opencode/plugins/` محافظت می‌شود: ساخت خودکار سولوشن پس از ویرایش C#، اجرای تست دود پس از ویرایش موتور، هشدار ناهم‌خوانی قرارداد موتور/دسکتاپ و قفل پوشهٔ مرجع.
 
@@ -233,3 +285,5 @@ dotnet test desktop\MinuteMate.Desktop.sln               # تست‌های قر�
 MIT — نگاه کن به [`LICENSE`](./LICENSE).
 
 مدل‌ها لایسنس خودشان را دارند: `faster-whisper-large-v3-turbo` و مدل‌های `sherpa-onnx` (PyAnnote 3.0 / WeSpeaker / 3D-Speaker).
+
+

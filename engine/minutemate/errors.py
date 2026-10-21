@@ -15,7 +15,7 @@ class EngineError(Exception):
 
 
 class InputError(EngineError):
-    code = "input_invalid"
+    code = "input_error"
 
 
 class ModelMissingError(EngineError):
@@ -28,6 +28,26 @@ class FfmpegError(EngineError):
 
 class CudaUnavailableError(EngineError):
     code = "cuda_unavailable"
+
+
+class LlmAuthMissingError(EngineError):
+    code = "llm_auth_missing"
+
+
+class LlmUnavailableError(EngineError):
+    code = "llm_unavailable"
+
+
+class LlmTimeoutError(EngineError):
+    code = "llm_timeout"
+
+
+class LlmBadResponseError(EngineError):
+    code = "llm_bad_response"
+
+
+class MinutesParseError(EngineError):
+    code = "minutes_parse_error"
 
 
 class CancelledError(EngineError):

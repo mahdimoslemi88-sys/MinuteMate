@@ -28,6 +28,10 @@ def merge_transcription_and_diarization(
     else:
         turns_sorted = sorted(turns, key=lambda t: t["start"])
         starts = [t["start"] for t in turns_sorted]
+        overlap_windows = _overlap_windows(turns_sorted)
+
+        def overlaps(a: float, b: float) -> bool:
+            return any(min(b, end) - max(a, start) >= 0.15 for start, end in overlap_windows)
 
         def speaker_at(a: float, b: float) -> int:
             i = max(0, bisect_right(starts, a) - 2)
@@ -45,18 +49,39 @@ def merge_transcription_and_diarization(
             return turns_sorted[j]["speaker"]
 
         utterances = _utterances_with_speakers(
-            segments_data.get("segments", []), speaker_at, max_utterance, gap
+            segments_data.get("segments", []), speaker_at, overlaps, max_utterance, gap
         )
+        overlap_count = sum(1 for utterance in utterances if utterance.get("overlap"))
+        if overlap_count:
+            ctx.log(f"{overlap_count} utterance با گفتار هم‌زمان علامت‌گذاری شد؛ تخصیص گوینده ممکن است نادرست باشد.", level="warning")
 
     out_file = Path(out_dir) / f"{stem}_transcript.json"
-    result = {"audio": segments_data.get("audio"), "utterances": utterances}
+    result = {
+        "audio": segments_data.get("audio"),
+        "utterances": utterances,
+        "overlapCount": sum(1 for utterance in utterances if utterance.get("overlap")),
+    }
     out_file.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     ctx.stage_progress(Stage.MERGE, 1.0, force=True)
     ctx.log(f"ادغام انجام شد: {len(utterances)} utterance")
     return result
 
 
-def _collect_words(segments, speaker_of):
+def _overlap_windows(turns: list[dict]) -> list[tuple[float, float]]:
+    windows: list[tuple[float, float]] = []
+    active: list[dict] = []
+    for turn in turns:
+        active = [item for item in active if item["end"] > turn["start"]]
+        for item in active:
+            start = max(turn["start"], item["start"])
+            end = min(turn["end"], item["end"])
+            if end - start >= 0.15:
+                windows.append((start, end))
+        active.append(turn)
+    return windows
+
+
+def _collect_words(segments, speaker_of, overlap_of):
     words = []
     for segment in segments:
         text = segment["text"].strip()
@@ -71,6 +96,7 @@ def _collect_words(segments, speaker_of):
                     "end": word["end"],
                     "text": word["word"],
                     "speaker": speaker_of(word["start"], word["end"]),
+                    "overlap": overlap_of(word["start"], word["end"]),
                 })
         else:
             words.append({
@@ -78,13 +104,16 @@ def _collect_words(segments, speaker_of):
                 "end": segment["end"],
                 "text": text,
                 "speaker": speaker_of(segment["start"], segment["end"]),
+                "overlap": overlap_of(segment["start"], segment["end"]),
             })
     words.sort(key=lambda w: w["start"])
     return words
 
 
-def _utterances_with_speakers(segments, speaker_of, max_utterance: float, gap: float) -> list[dict]:
-    words = _collect_words(segments, speaker_of)
+def _utterances_with_speakers(
+    segments, speaker_of, overlap_of, max_utterance: float, gap: float
+) -> list[dict]:
+    words = _collect_words(segments, speaker_of, overlap_of)
     utterances: list[dict] = []
     for word in words:
         if utterances:
@@ -95,11 +124,20 @@ def _utterances_with_speakers(segments, speaker_of, max_utterance: float, gap: f
             if same and close and long_enough:
                 current["words"].append(word)
                 current["end"] = word["end"]
+                current["overlap"] = current.get("overlap", False) or word.get("overlap", False)
                 continue
-        utterances.append({"speaker": word["speaker"], "start": word["start"], "end": word["end"], "words": [word]})
+        utterances.append({
+            "speaker": word["speaker"],
+            "start": word["start"],
+            "end": word["end"],
+            "overlap": bool(word.get("overlap")),
+            "words": [word],
+        })
     for utterance in utterances:
         utterance["text"] = " ".join(w["text"].strip() for w in utterance["words"]).strip()
         utterance.pop("words")
+        if not utterance.get("overlap"):
+            utterance.pop("overlap", None)
     return utterances
 
 

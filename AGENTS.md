@@ -50,6 +50,7 @@ python -m minutemate run --job -                          # حالت ماشین:
 # تست
 python -m pytest -q                                      # از پوشه engine
 python scripts\smoke_job.py scratch\sample30.wav --num-speakers 2 --speaker "0=مهدی:سرپرست"
+python scripts\evaluate.py --registry data\benchmarks\registry.json --run-all   # ارزیابی WER/CER/DER/JER + RTF
 
 # دسکتاپ
 dotnet build desktop\MinuteMate.Desktop.sln

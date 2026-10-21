@@ -2,7 +2,7 @@
 
 | وضعیت | آخرین به‌روزرسانی | مالک |
 | :--- | :--- | :--- |
-| فعال (سیاست)، ابزار ⏳ M2 | 1405-07-27 | Data |
+| فعال (سیاست + ابزار M2) | 1405-07-28 | Data |
 
 ## ۱. طبقهٔ داده و حساسیت
 
@@ -25,18 +25,19 @@
 | `benchmarks/` | دائمی | — |
 | `tmp/` | هر لحظه | حذف خودکار در شروع اجرا |
 
-فرمان هدف (M2):
+فرمان‌های اجراشده (M2):
 
 ```powershell
 python -m minutemate data prune --older-than 30d --target work
 python -m minutemate data prune --older-than 90d --target work --keep-transcripts
-python -m minutemate data archive --session 2026-10-19-haftegi   # فشرده‌سازی work/
+python -m minutemate data archive --session 2026-10-19-haftegi --delete   # فشرده‌سازی work/ به work.zip
+python -m minutemate data list                                            # بازسازی data/index.json
 ```
 
 ## ۳. حریم خصوصی
 
 1. **آفلاین‌بودن پیش‌فرض:** موتور هیچ داده‌ای را بدون اقدام صریح کاربر به بیرون نمی‌فرستد؛ تنها استثنا دانلود مدل و (در M3) فراخوانی LLM که باید در تنظیمات با هشدار روشن باشد.
-2. **رضایت ضبط:** مسئولیت رضایت اعضای جلسه بر عهدهٔ کاربر است؛ در `docs/06-product/faq.md` این موضوع شفاف توضیح داده شود.
+2. **رضایت ضبط:** مسئولیت رضایت اعضای جلسه بر عهدهٔ کاربر است؛ `docs/06-product/faq.md` و `docs/03-operations/privacy.md`.
 3. **ناشناس‌سازی بنچمارک:** پیش از هر اشتراک‌گذاری، نام‌ها در متن و RTTM با `گوینده N` جایگزین شوند.
 4. **لاگ‌ها:** `%LOCALAPPDATA%\MinuteMate\logs` و `--log-level DEBUG` نباید مسیرهای حساس یا متن جلسه را در خود داشته باشند (بازبینی در M1 برای پاک‌سازی مسیرها).
 5. **حذف داده:** «حذف جلسه» باید `raw/`, `work/`, `out/`, `session.json` و ورودی نمایهٔ جست‌وجو را یک‌جا پاک کند.

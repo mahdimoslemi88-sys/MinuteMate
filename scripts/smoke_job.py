@@ -26,6 +26,12 @@ def main() -> int:
     parser.add_argument("--out-dir", type=Path, default=ROOT / "scratch" / "smoke")
     parser.add_argument("--timeout", type=int, default=3600)
     parser.add_argument(
+        "--engine",
+        type=Path,
+        default=None,
+        help="path to a packaged minutemate-engine.exe (default: python -m minutemate)",
+    )
+    parser.add_argument(
         "--speaker",
         action="append",
         default=[],
@@ -62,9 +68,16 @@ def main() -> int:
         "speakerMap": speaker_map,
     }
 
+    if args.engine:
+        command = [str(args.engine.resolve()), "run", "--job", "-"]
+        working_dir = str(args.engine.resolve().parent)
+    else:
+        command = [sys.executable, "-m", "minutemate", "run", "--job", "-"]
+        working_dir = str(ROOT / "engine")
+
     process = subprocess.Popen(
-        [sys.executable, "-m", "minutemate", "run", "--job", "-"],
-        cwd=str(ROOT / "engine"),
+        command,
+        cwd=working_dir,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

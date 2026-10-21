@@ -73,7 +73,10 @@ def export_diarized_transcript(
                 handle.write(f"گوینده {speaker_id}{role_suffix}:\n\n")
             else:
                 handle.write(f"گوینده {speaker_id} ({name}{role_suffix}):\n\n")
-            handle.write(f"{normalize(utterance['text'])}\n\n")
+            handle.write(f"{normalize(utterance['text'])}\n")
+            if utterance.get("overlap"):
+                handle.write("\n[هم‌پوشانی گویندگان: تخصیص گوینده ممکن است نادرست باشد]\n")
+            handle.write("\n")
 
     with md_path.open("w", encoding="utf-8") as handle:
         handle.write("# رونویسی مرتب‌شده و تفکیک‌شده بر اساس گویندگان\n\n")
@@ -85,7 +88,10 @@ def export_diarized_transcript(
                 handle.write(f"### `[{fmt_ts(utterance['start'])}]` گوینده {speaker_id}{role_suffix}\n\n")
             else:
                 handle.write(f"### `[{fmt_ts(utterance['start'])}]` {name} (گوینده {speaker_id}){role_suffix}\n\n")
-            handle.write(f"{normalize(utterance['text'])}\n\n---\n\n")
+            handle.write(f"{normalize(utterance['text'])}\n\n")
+            if utterance.get("overlap"):
+                handle.write("> **هشدار:** گفتار هم‌زمان شناسایی شد؛ تخصیص گوینده ممکن است نادرست باشد.\n\n")
+            handle.write("---\n\n")
 
     return txt_path, md_path
 

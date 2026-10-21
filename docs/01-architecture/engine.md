@@ -11,13 +11,14 @@
 | مسیر | مسئولیت |
 | :--- | :--- |
 | `minutemate/__main__.py` | اجرای `main()` هنگام `python -m minutemate` |
-| `minutemate/cli.py` | پارس آرگومان‌ها، حالت انسانی و حالت ماشین، نصب signal handler، `models`/`preflight` |
-| `minutemate/config.py` | `EngineConfig` + `from_payload` (نگاشت camelCase) + حل دستگاه/نوع محاسبه |
+| `minutemate/cli.py` | پارس آرگومان‌ها، حالت انسانی و حالت ماشین، نصب signal handler، `models`/`preflight`/`data` |
+| `minutemate/config.py` | `EngineConfig` + `from_payload` (نگاشت camelCase) + حل دستگاه/نوع محاسبه + `MinutesConfig` |
+| `minutemate/session.py` | ساختار جلسه (`raw/work/out`)، `session.json`، فهرست/نمایه، `prune`/`archive`/`adopt` (M2) |
 | `minutemate/job.py` | `JobContext`: لغو، پیشرفت throttle‌شده، رویدادهای stage/artifact/log/done/fail |
 | `minutemate/events.py` | مدل `EngineEvent`، ثابت‌های `EventType`/`Stage`/`Status`، `JsonEventSink`/`TextEventSink`/`NullEventSink` |
 | `minutemate/errors.py` | خطاهای تایپ‌دار (`InputError`, `ModelMissingError`, `FfmpegError`, `CudaUnavailableError`, `CancelledError`, `StageError`) + `to_payload` |
-| `minutemate/pipeline.py` | ارکستریشن `preflight()` و `run()` (پنج مرحله) |
-| `minutemate/paths.py` | حل ریشهٔ پروژه/مدل‌ها (`resolve_models_dir`)، ساخت پوشه |
+| `minutemate/pipeline.py` | ارکستریشن `preflight()` و `run()` (شش مرحله) + مسیردهی `work/`/`out/` و نوشتن `session.json` |
+| `minutemate/paths.py` | حل ریشهٔ پروژه/مدل‌ها/داده (`resolve_models_dir`, `resolve_data_dir`)، ساخت پوشه |
 | `minutemate/env.py` | تشخیص تعداد GPU و `setup_windows_cuda()` (افزودن مسیر DLLهای CUDA) |
 | `minutemate/logging_setup.py` | لاگ روی stderr (هرگز stdout در حالت ماشین) |
 | `audio/ffmpeg.py` | `ensure_ffmpeg`, `probe`, `preprocess` (پیشرفت با `-progress pipe:1`, drain کردن stderr, لغو) |
@@ -30,6 +31,7 @@
 | `text/normalize.py` | نیم‌فاصله، واژه‌نامهٔ تخصصی، حذف حشو |
 | `text/renderers.py` | تولید `01_raw_transcript.txt` و `02_diarized_cleaned_transcript.{txt,md}` |
 | `text/resources`/`resources/glossary_fa.json` | واژه‌نامهٔ قابل‌ویرایش |
+| `minutes/` | قطعه‌بندی رونویسی، Provider (OpenAI-compatible/Ollama)، اعتبارسنجی/ادغام ساختاریافته، رندر `03_…`, `04_…` |
 | `models/registry.py` | فهرست مدل‌ها (مسیر نسبی، لینک، حداقل حجم) + `resolve`/`verify` |
 | `models/downloader.py` | دانلود با پیشرفت، استخراج آرشیو (tar.bz2)، بازبینی حجم |
 
@@ -42,13 +44,13 @@
 | `transcription` | Whisper با word timestamps | `<stem>.segments.json/.jsonl/.txt/.srt` | ✅ (per segment) |
 | `merge` | تخصیص گوینده + چسباندن جملات | حافظه (`utterances`) | — |
 | `export` | رندر فارسی و نوشتن گزارش‌ها + رویداد `artifact` | `01_…`, `02_…` | — |
-| `minutes` | تولید صورت‌جلسه با LLM | `03_…`, `04_…` | ⏳ M3 |
+| `minutes` | تولید صورت‌جلسه با LLM (اختیاری) | `03_…`, `04_…`, `<stem>.minutes.json` | ✅ (بین قطعه‌ها) |
 
 ## ۳. الگوهای پیاده‌سازی
 
 - **لغو (cancellation):** `JobContext.cancelled` (رویداد) در حلقه‌های طولانی بررسی و `CancelledError` پرتاب می‌شود؛ handler سیگنال روی SIGINT/SIGTERM همان را ست می‌کند.
 - **پیشرفت:** هر مرحله `stage_progress(stage, fraction, eta=…)` با throttle (کاهش نویز) و امکان `force=True` برای ۰٪ و ۱۰۰٪.
-- **خطا:** فقط `EngineError` به رویداد `error` با `code`/`hint` نگاشت می‌شود؛ استثناهای غیرمنتظره به `internal_error` تبدیل و با traceback در stderr لاگ می‌شوند.
+- **خطا:** فقط `EngineError` به رویداد `error` با `code`/`hint` نگاشت می‌شود؛ استثناهای غیرمنتظره به `engine_error` تبدیل و با traceback در stderr لاگ می‌شوند.
 - **ادغام دوباره (idempotency):** اگر `_16k_mono.wav` معتبر باشد، مرحلهٔ پیش‌پردازش رد می‌شود.
 - **UTF-8:** در `cli._configure_console()` هر سه جریان `stdin/stdout/stderr` روی UTF-8 تنظیم و job از `stdin.buffer` با UTF-8 خوانده می‌شود.
 

@@ -51,11 +51,12 @@ $env:MINUTEMATE_MODELS_DIR = "D:\models"
 ## ۴. پیش‌بررسی
 
 ```powershell
+python -m minutemate --version
 python -m minutemate preflight
-# خروجی JSON: modelsDir, modelsReady, missingModels, ffmpeg, device, computeType
+# خروجی JSON: engineVersion, modelsDir, modelsReady, missingModels, ffmpeg, device, computeType, gpuCount, cudaAvailable
 ```
 
-اگر `modelsReady=false` است، فهرست `missingModels` را ببین؛ اگر `ffmpeg=null` است، FFmpeg روی `PATH` نیست (یا با `--ffmpeg <path>` مسیر بده).
+اگر `modelsReady=false` است، فهرست `missingModels` را ببین؛ اگر `ffmpeg=null` است، FFmpeg روی `PATH` نیست (یا با `--ffmpeg <path>` مسیر بده). اگر نسخهٔ موتور با دسکتاپ (`desktop/Directory.Build.props` → `Version`) در major/minor یکی نباشد، UI هشدار می‌دهد.
 
 ## ۵. اولین اجرا
 
@@ -75,14 +76,19 @@ powershell -ExecutionPolicy Bypass -File desktop\scripts\run.ps1
 
 | تنظیم | فایل | نکته |
 | :--- | :--- | :--- |
-| مسیر پایتون/موتور | `desktop\src\MinuteMate.App\appsettings.json` | `Engine.PythonPath`, `Engine.ExecutablePath`, `Engine.PythonModule` |
+| مسیر پایتون/موتور | `desktop\src\MinuteMate.App\appsettings.json` یا صفحهٔ تنظیمات | `Engine.PythonPath`, `Engine.ExecutablePath`, `Engine.PythonModule` |
+| پوشهٔ جلسه‌ها/مدل‌ها | صفحهٔ تنظیمات (ذخیره در `settings.json`) | `Storage.SessionsRoot`, `Storage.ModelsDirectory` |
+| پیش‌فرض‌های اجرا | صفحهٔ تنظیمات | تعداد گویندگان، دستگاه، نوع محاسبه، فعال‌بودن صورت‌جلسه |
 | ریشهٔ دادهٔ اپ | `MINUTEMATE_DATA_DIR` | پیش‌فرض `%LOCALAPPDATA%\MinuteMate` |
+
+`settings.json` در `%LOCALAPPDATA%\MinuteMate\settings.json` ذخیره می‌شود و بر `appsettings.json` مقدم است؛ مقادیر خالی آن، مقدار `appsettings.json` را پاک نمی‌کنند.
 
 ## ۷. متغیرهای محیطی
 
 | متغیر | مصرف‌کننده | معنا |
 | :--- | :--- | :--- |
 | `MINUTEMATE_MODELS_DIR` | موتور | مسیر پوشهٔ مدل‌ها |
+| `MINUTEMATE_LLM_API_KEY` | موتور (مرحلهٔ `minutes`) | کلید سرویس LLM؛ نام قابل‌تغییر با `minutes.apiKeyEnv`. کلید هرگز در job/لاگ نیست |
 | `MINUTEMATE_DATA_DIR` | دسکتاپ | ریشهٔ دادهٔ اپ (models/projects/logs/output/settings.json) |
 | `MINUTEMATE_SMOKE` | هوک‌های توسعه | `0` = خاموش‌کردن تست دود خودکار |
 | `MINUTEMATE_DOTNET` | هوک‌های توسعه | `0` = خاموش‌کردن بیلد خودکار C# |

@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 MODELS_DIR_VARIABLE = "MINUTEMATE_MODELS_DIR"
+DATA_DIR_VARIABLE = "MINUTEMATE_DATA_DIR"
 
 
 def package_dir() -> Path:
@@ -39,3 +40,14 @@ def ensure_dir(path: str | os.PathLike[str]) -> Path:
     resolved = Path(path).resolve()
     resolved.mkdir(parents=True, exist_ok=True)
     return resolved
+
+
+def resolve_data_dir(explicit: str | os.PathLike[str] | None = None) -> Path:
+    if explicit:
+        return Path(os.path.expandvars(str(explicit))).expanduser().resolve()
+
+    from_env = os.environ.get(DATA_DIR_VARIABLE)
+    if from_env:
+        return Path(os.path.expandvars(from_env)).expanduser().resolve()
+
+    return (project_root() / "data").resolve()

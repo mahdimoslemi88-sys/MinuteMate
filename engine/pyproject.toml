@@ -15,6 +15,7 @@ dependencies = [
   "onnxruntime>=1.20.0",
   "numpy>=1.26.0",
   "scipy>=1.14.0",
+  "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -22,7 +23,7 @@ gpu = [
   "nvidia-cublas-cu12>=12.4.0; platform_system == 'Windows'",
   "nvidia-cuda-nvrtc-cu12>=12.4.0; platform_system == 'Windows'",
 ]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "rapidfuzz>=3.0"]
 
 [project.scripts]
 minutemate = "minutemate.cli:main"
@@ -31,7 +32,7 @@ minutemate = "minutemate.cli:main"
 include = ["minutemate*"]
 
 [tool.setuptools.package-data]
-minutemate = ["resources/*.json"]
+minutemate = ["resources/*.json", "resources/prompts/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

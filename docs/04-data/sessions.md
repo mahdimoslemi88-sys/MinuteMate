@@ -2,7 +2,7 @@
 
 | وضعیت | آخرین به‌روزرسانی | مالک |
 | :--- | :--- | :--- |
-| طرح‌ریزی‌شده (M2) | 1405-07-27 | Data |
+| پیاده‌سازی‌شده (M2، م2.1–م2.4) | 1405-07-28 | Data |
 
 ## ۱. ساختار پوشه
 
@@ -19,8 +19,9 @@ data/sessions/2026-10-19-haftegi/
 │   ├── 01_raw_transcript.txt
 │   ├── 02_diarized_cleaned_transcript.txt
 │   ├── 02_diarized_cleaned_transcript.md
-│   ├── 03_official_meeting_minutes.md      # ⏳ M3
-│   └── 04_action_items.md                  # ⏳ M3
+│   ├── 03_official_meeting_minutes.md      # ✅ M3a
+│   ├── 04_action_items.md                  # ✅ M3a
+│   └── haftegi.minutes.json                # ✅ M3a (منبع حقیقت رندر)
 ├── speaker_map.json                # اختیاری، نتیجهٔ مهارت گوینده‌یاب
 └── session.json                    # manifest
 ```
@@ -54,7 +55,15 @@ data/sessions/2026-10-19-haftegi/
       "segmentation": "sherpa-onnx-pyannote-segmentation-3-0",
       "embedding": "wespeaker_en_voxceleb_resnet34_LM"
     },
-    "durationSeconds": 168.7
+    "durationSeconds": 168.7,
+    "stageSeconds": {
+      "preprocess": 0.7,
+      "diarization": 3.4,
+      "transcription": 58.2,
+      "merge": 0.1,
+      "export": 0.2
+    },
+    "overlapCount": 2
   },
   "speakers": [
     { "id": 0, "name": "مهدی", "role": "سرپرست فنی", "confidence": "high" },
@@ -76,6 +85,10 @@ data/sessions/2026-10-19-haftegi/
 | `speakers[].confidence` | خروجی مهارت گوینده‌یاب (`high`/`medium`/`low`/`unknown`) |
 | `artifacts[]` | مسیرها **نسبی** به پوشهٔ جلسه |
 | `run.models` | نسخهٔ دقیق مدل‌ها برای بازتولیدپذیری |
+| `run.stageSeconds` | زمان هر مرحله؛ ورودی تاریخچهٔ سرعت برای ETA (M6.3) |
+| `run.overlapCount` | تعداد utteranceهای گفتار هم‌زمان (M6.6) |
+
+`<data>/metrics/device_speed.json` (یا `metricsDirectory` در job) میانهٔ آخرین ۵ اجرا برای هر `device:computeType` را نگه می‌دارد؛ ETA از همین تاریخچه محاسبه می‌شود.
 
 ## ۳. چرخهٔ عمر یک جلسه
 
@@ -84,7 +97,7 @@ raw/ (کپی فایل اصلی)
   → work/ (پیش‌پردازش + دیاریزیشن + ASR + merge)
   → out/ (01_, 02_)
   → [مهارت گوینده‌یاب] speaker_map.json → اجرای مجدد برای اعمال نام‌ها
-  → out/ (03_, 04_) [M3]
+  → out/ (03_, 04_, *.minutes.json) [M3a]
   → status = final  →  آرشیو (فشرده‌سازی work/)
 ```
 
@@ -93,23 +106,34 @@ raw/ (کپی فایل اصلی)
 | raw → work | `preprocess`, `diarization`, `transcription`, `merge` | وجود `work/*_transcript.json` |
 | work → out | `export` | وجود `01_` و `02_` |
 | out → نام‌گذاری | اعمال `speaker_map.json` | برچسب گوینده‌ها = نام واقعی |
-| out → minutes | مرحلهٔ `minutes` [M3] | وجود `03_` و `04_` |
+| out → minutes | مرحلهٔ `minutes` [M3a] | وجود `03_`، `04_` و `*.minutes.json` |
 | نهایی → آرشیو | فشرده‌سازی `work/`، حفظ `raw/` و `out/` | کاهش حجم ≥ ۵۰٪ |
 
 ## ۴. کار با جلسه
 
 ```powershell
-# هدف M2
+# M2
 python -m minutemate run .\raw\haftegi.mp3 --session-dir data\sessions\2026-10-19-haftegi --num-speakers 4
+python -m minutemate run .\raw\haftegi.mp3 --sessions-root data\sessions --num-speakers 4   # شناسه خودکار
 python -m minutemate data list
-python -m minutemate data prune --older-than 90d --keep-final
+python -m minutemate data index
+python -m minutemate data prune --older-than 90d --target work --keep-transcripts
+python -m minutemate data archive --session 2026-10-19-haftegi --delete
+python -m minutemate data adopt .\output --id 2026-10-19-haftegi --title "جلسهٔ هفتگی"
 ```
 
-اکنون (بدون M2):
+حالت مسطح (سازگاری قدیمی، بدون `session.json`):
 
 ```powershell
 python -m minutemate run .\haftegi.mp3 --out-dir data\sessions\2026-10-19-haftegi\work --stem haftegi --num-speakers 4
 ```
+
+### ۴.۱ در اپ دسکتاپ (M1b)
+
+- هر اجرا با `sessionsRoot` ارسال می‌شود و شناسهٔ `<تاریخ>-<slug>` خودکار ساخته می‌شود؛ اجرای دوم با همان عنوان/تاریخ پسوند `-2` می‌گیرد.
+- کارت «جلسات اخیر» مستقیماً `session.json`ها را می‌خواند (`SessionCatalog`): وضعیت، تاریخ، مدت و تعداد گوینده.
+- جست‌وجو روی عنوان/شناسه/وضعیت/تاریخ و متن `out/02_diarized_cleaned_transcript.md` (که «ي/ك» و ارقام فارسی نرمال می‌شوند).
+- «نمایش» فایل `03_` (یا `02_`) را باز می‌کند، «پوشه» پوشهٔ جلسه و «اجرای مجدد» فایل `raw/` را به‌عنوان ورودی برمی‌گرداند.
 
 ## ۵. قواعد یکپارچگی
 

@@ -26,10 +26,14 @@
 | `02-contracts` | [job-json.md](./02-contracts/job-json.md) | قرارداد ورودی (job) |
 | | [ndjson-events.md](./02-contracts/ndjson-events.md) | قرارداد خروجی (رویدادها) |
 | | [artifacts.md](./02-contracts/artifacts.md) | فایل‌های تولیدی و مسیرها |
+| | [minutes.md](./02-contracts/minutes.md) | قرارداد مرحلهٔ صورت‌جلسه (M3a) |
+| | [engine-process-runner.md](./02-contracts/engine-process-runner.md) | رفتار اجراکنندهٔ موتور و لغو/لاگ (M1a) |
 | `03-operations` | [setup-windows.md](./03-operations/setup-windows.md) | نصب و راه‌اندازی |
 | | [models.md](./03-operations/models.md) | مدل‌ها، مسیرها، لایسنس |
 | | [performance.md](./03-operations/performance.md) | تنظیم سرعت و GPU |
 | | [troubleshooting.md](./03-operations/troubleshooting.md) | خطاهای رایج و راه‌حل |
+| | [packaging.md](./03-operations/packaging.md) | ساخت sidecar، نصاب و انتشار |
+| | [privacy.md](./03-operations/privacy.md) | لاگ‌ها، رضایت ضبط و مجوز مدل‌ها |
 | `04-data` | [`../../data/README.md`](../../data/README.md) | چیدمان داده و چرخهٔ عمر (سند در خود پوشهٔ `data/` است) |
 | | [sessions.md](./04-data/sessions.md) | ساختار جلسه و manifest |
 | | [benchmarks.md](./04-data/benchmarks.md) | مجموعهٔ ارزیابی |
@@ -38,6 +42,7 @@
 | | [evaluation.md](./05-quality/evaluation.md) | سنجش WER/DER و پذیرش |
 | `06-product` | [features.md](./06-product/features.md) | فهرست قابلیت‌ها و وضعیت |
 | | [workflows.md](./06-product/workflows.md) | جریان‌های کاربری |
+| | [install-guide.md](./06-product/install-guide.md) | نصب تا اولین صورت‌جلسه |
 | | [faq.md](./06-product/faq.md) | پرسش‌های متداول |
 | سرمایهٔ تصویری/دیاگرام | `assets/` | تصاویر و دیاگرام‌ها |
 

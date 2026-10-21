@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "description": "Golden benchmark set for MinuteMate. Truth files marked draft are ASR-derived placeholders and must be corrected by a human before being used as an official quality number.",
+  "sourceRepository": "../meeting-text",
+  "samples": [
+    {
+      "id": "mm19-0062",
+      "stem": "mm19-0062",
+      "audio": "audio/mm19-0062.wav",
+      "durationSeconds": 30.02,
+      "language": "fa",
+      "speakers": 1,
+      "title": "برش ۶۲ تا ۹۲ ثانیه از جلسهٔ session_20261019",
+      "date": "2026-10-19",
+      "condition": "far-field, single speaker, noisy meeting room",
+      "truthStatus": "draft",
+      "truthSource": "ASR draft from faster-whisper large-v3-turbo, CPU int8, beam_size=5; not human-verified",
+      "truthText": "truth/mm19-0062.txt",
+      "truthRttm": "truth/mm19-0062.rttm",
+      "notes": "Exact 30 s excerpt starting at 62.0 s of ../meeting-text/output/session_20261019_16k_mono.wav (correlation 1.0000). Source session has 4 requested speakers and auto_detected_k=2; this window contains only speaker 0. RTTM is provisional and copied from source turns, so it has no speech after 12.213 s even though ASR hears speech until ~16 s."
+    }
+  ]
+}

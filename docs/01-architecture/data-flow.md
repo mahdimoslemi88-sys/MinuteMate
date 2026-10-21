@@ -14,9 +14,10 @@ flowchart LR
   E --> F[export]
   F --> G[01_raw_transcript.txt]
   F --> H[02_diarized_cleaned_transcript.md]
-  H -.-> I[minutes - M3]
+  H -.-> I[minutes]
   I --> J[03_official_meeting_minutes.md]
   I --> K[04_action_items.md]
+  I --> L[stem.minutes.json]
 ```
 
 ## ۱. مرحله‌به‌مرحله
@@ -28,7 +29,7 @@ flowchart LR
 | ۳ | `transcription` | WAV پیش‌پردازش‌شده | Whisper `large-v3-turbo`، word timestamps، VAD | `<stem>.segments.json/.jsonl/.txt/.srt` | `stage` از روی `end/duration` |
 | ۴ | `merge` | segments + speakers | برای هر واژه: گویندهٔ دارای بیشترین هم‌پوشانی؛ گروه‌بندی واژه‌های پیوستهٔ یک گوینده در یک utterance | در حافظه + `<stem>_transcript.json` | `stage` ۰→۱ |
 | ۵ | `export` | utterances + speaker map | پالایش فارسی (نیم‌فاصله، واژه‌نامه)، اعمال نام گویندگان، رندر | `01_raw_transcript.txt`, `02_diarized_cleaned_transcript.{txt,md}` | یک `artifact` برای هر فایل |
-| ۶ | `minutes` ⏳ M3 | `02_…md` | فراخوانی LLM با prompt مهارت‌ها، ساختاردهی به مصوبات/اکشن‌آیتم | `03_official_meeting_minutes.md`, `04_action_items.md` | `stage: minutes` |
+| ۶ | `minutes` ✅ M3a | `<stem>_transcript.json` (utteranceهای شاهد) | قطعه‌بندی، فراخوانی LLM (استخراج + ادغام محلی)، اعتبارسنجی شاهد، رندر | `03_official_meeting_minutes.md`, `04_action_items.md`, `<stem>.minutes.json` | `stage: minutes` + یک `artifact` برای هر فایل |
 
 ## ۲. قواعد ادغام (merge)
 
